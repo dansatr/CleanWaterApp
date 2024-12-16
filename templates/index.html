@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Water Quality Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .upload-form {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+            display: none;
+        }
+        .clean {
+            background-color: #90EE90;
+            color: #006400;
+        }
+        .dirty {
+            background-color: #FFB6C1;
+            color: #8B0000;
+        }
+        #preview {
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+            border-radius: 5px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Water Quality Classifier</h1>
+        <p style="text-align: center;">Upload an image of water to classify its quality</p>
+        
+        <form id="upload-form" class="upload-form">
+            <input type="file" id="file-input" accept=".jpg,.jpeg,.png" required>
+            <button type="submit">Analyze</button>
+        </form>
+        
+        <img id="preview" style="display: none;">
+        
+        <div class="loading" id="loading">
+            Analyzing image...
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('file-input').onchange = function(e) {
+            const preview = document.getElementById('preview');
+            preview.src = URL.createObjectURL(e.target.files[0]);
+            preview.style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        };
+
+        document.getElementById('upload-form').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('file-input');
+            formData.append('file', fileInput.files[0]);
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                const resultDiv = document.getElementById('result');
+                if (data.error) {
+                    resultDiv.textContent = `Error: ${data.error}`;
+                    resultDiv.className = 'result';
+                } else {
+                    resultDiv.textContent = `Prediction: ${data.prediction} (Confidence: ${data.confidence})`;
+                    resultDiv.className = `result ${data.prediction.toLowerCase()}`;
+                }
+                resultDiv.style.display = 'block';
+            })
+            .catch(error => {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                console.error('Error:', error);
+                const resultDiv = document.getElementById('result');
+                resultDiv.textContent = 'Error processing request';
+                resultDiv.className = 'result';
+                resultDiv.style.display = 'block';
+            });
+        };
+    </script>
+</body>
+</html>

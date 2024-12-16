@@ -1,0 +1,16 @@
+_pycache_/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.*py[cod]
+.*%py.class
+*.h5
+Dataset/
+.env
+.venv
+env/
+.idea/
+.vscode/
+*.swp
+.DS_Store
