@@ -282,7 +282,7 @@ def main():
 
     #Run training
     if __name__ == "__main__":
-    main()
+        main()
 
     #Show plots
     # Load both training histories

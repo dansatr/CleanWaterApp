@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, GlobalAveragePooling2D
 import numpy as np
 import cv2
 from PIL import Image
@@ -10,35 +12,46 @@ app = Flask(__name__)
 
 model = None
 
-# Load the model
 def load_model():
     global model
-    model_files = [
-        'best_water_quality_model_fold1.h5',
-        'best_water_quality_model_fold2.h5'
-    ]
-    
-    for model_file in model_files :
-        try:
-            print(f"Attempting to load model from {model_file}")
-            if os.path.exists(model_file):
-                # Load model without compiling
-                model = tf.keras.models.load_model(model_file, compile=False)
-                
-                # Recompile the model
-                model.compile(
-                    optimizer='adam',
-                    loss='binary_crossentropy',
-                    metrics=['accuracy']
-                )
-                print(f"Successfully loaded model from {model_file}")
-                return
-            else:
-                print(f"Model file not found: {os.path.abspath(model_file)}")
-        except Exception as e:
-            print(f"Error loading {model_file}: {str(e)}")
-    
-    print("Failed to load any model file")
+    try:
+        # Create model with architecture
+        input_shape = (224, 224, 3)
+        base_model = tf.keras.applications.MobileNetV2(
+            weights='imagenet',
+            include_top=False,
+            input_shape=input_shape
+        )
+        
+        base_model.trainable = False
+        
+        model = Sequential([
+            base_model,
+            GlobalAveragePooling2D(),
+            Dense(64, activation='relu'),
+            BatchNormalization(),
+            Dropout(0.3),
+            Dense(32, activation='relu'),
+            BatchNormalization(),
+            Dense(1, activation='sigmoid')
+        ])
+        
+        # Load weights from h5 file
+        model.load_weights('best_water_quality_model_fold2.h5')
+        
+        # Compile the model
+        model.compile(
+            optimizer='adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy']
+        )
+        print("Successfully loaded model")
+        return
+        
+    except Exception as e:
+        print(f"Error loading model: {str(e)}")
+        
+    print("Failed to load model")
     
 
 # Load model when starting the app
