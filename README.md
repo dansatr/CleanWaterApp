@@ -22,16 +22,6 @@ This project implements a water quality classification system using deep learnin
 - Best F1 Score: 0.9333
 - Cross-validation with 3 folds
 
-├── app.py                      # Flask application
-├── templates/                  # Frontend templates
-│   └── index.html             # Main web interface
-├── test.ipynb                 # Model training notebook
-├── training_history_*.json    # Training logs
-└── best_water_quality_model_*.h5  # Trained models
-
-Depenedencies
-
-
 Dependencies
 
 Python 3.8+
